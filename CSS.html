@@ -1,0 +1,108 @@
+<style>
+    .btn-group-xs > .btn, .btn-xs {
+      padding: .25rem .4rem;
+      font-size: .875rem;
+      line-height: .5;
+      border-radius: .2rem;
+    }
+    
+    #sizeColorTable table {
+      table-layout: fixed;
+    }
+    
+    #sizeColorTable th {
+      vertical-align: middle;
+      text-align: center;
+      width: 40px;
+    }
+    
+    #sizeColorTable th, #sizeColorTable td {
+      /* border-left: 1px solid #83a9c9; */
+      /* border-right: 1px solid #83a9c9; */
+      font-size: 13px;
+    }
+    
+    #sizeColorTable th {
+      background-color: #f1eced;
+    }
+    
+    #sizeColorTable td {
+      border-bottom-width: 1px;
+      padding: 0;
+    }
+    
+    /* #sizeColorTable input {border:0;outline:0;}
+    #sizeColorTable input:focus {outline:none!important;} */
+    
+    #sizeColorTable .form-control {
+      padding: .375rem 0;
+      text-align: center;
+    }
+    
+    /* Remove Arrows/Spinners Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    /* Remove Arrows/Spinners Firefox */
+    input[type=number] {
+      -moz-appearance: textfield;
+      border-radius: 0;
+    }
+    
+    /* Center the loader */
+    #loader {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 1;
+      width: 120px;
+      height: 120px;
+      margin: -76px 0 0 -76px;
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #3498db;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+    }
+    
+    @-webkit-keyframes spin {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Add animation to "page content" */
+    .animate-bottom {
+      position: relative;
+      -webkit-animation-name: animatebottom;
+      -webkit-animation-duration: 1s;
+      animation-name: animatebottom;
+      animation-duration: 1s
+    }
+    
+    @-webkit-keyframes animatebottom {
+      from { bottom:-100px; opacity:0 } 
+      to { bottom:0px; opacity:1 }
+    }
+    
+    @keyframes animatebottom { 
+      from{ bottom:-100px; opacity:0 } 
+      to{ bottom:0; opacity:1 }
+    }
+    
+    input[type=number]::placeholder {
+        font: 9px sans-serif;
+        font-weight: lighter;
+        font-style: italic;
+    }
+    
+    
+    </style>

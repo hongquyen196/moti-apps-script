@@ -1,0 +1,77 @@
+<!-- ## The html code of the form goes here -->
+<!-- ## This is included in the Index.html page using "include('Form')" function -->
+
+<form id="myForm" class="p-2 border border-light rounded bg-light" onsubmit="handleFormSubmit(this)">
+    <!-- Call JavaScript function "handleFormSubmit" -->
+    <p class="h4 mb-4 text-center">MOTI - Nhập thông tin khách hàng</p>
+    <div id="message"></div>
+    <input type="text" id="RecId" name="RecId" value="" style="display: none">
+    <input type="text" id="DateCreated" name="DateCreated" value="" style="display: none">
+    <input type="text" id="CreatedBy" name="CreatedBy" value="" style="display: none">
+    <div class="form-row">
+        <div class="form-group col">
+            <label for="fullName">Họ và tên</label>
+            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Họ và tên" oninvalid="this.setCustomValidity('Họ và tên không được để trống.')" oninput="setCustomValidity('')" required>
+        </div>
+        <div class="form-group col">
+            <label for="phone">Số điện thoại</label>
+            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Số điện thoại" minlength="10" maxlength="11" oninvalid="this.setCustomValidity('Số điện thoại phải tối thiểu 10 chữ số.')" oninput="setCustomValidity('')" required>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="address">Địa chỉ</label>
+            <textarea class="form-control" id="address" name="address" rows="1" placeholder="Địa chỉ" oninvalid="this.setCustomValidity('Địa chỉ không được để trống.')" oninput="setCustomValidity('')" required></textarea>
+        </div>
+        <div class="form-group col">
+            <label for="city">Tỉnh thành</label>
+            <select class="form-control" id="city" name="city" onchange="selectCity(this.value)" oninvalid="this.setCustomValidity('Tỉnh thành không được để trống.')" oninput="setCustomValidity('')" required>
+                <option></option>
+            </select>
+        </div>
+        <div class="form-group col">
+            <label for="district">Quận huyện</label>
+            <select class="form-control" id="district" name="district" oninvalid="this.setCustomValidity('Quận huyện không được để trống.')" oninput="setCustomValidity('')" required>
+                <option></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col">
+            <label for="quantity">Tổng SL</label>
+            <input type="number" class="form-control" id="quantity" name="quantity" oninvalid="this.setCustomValidity('Tổng SL không được để trống.')" oninput="setCustomValidity('')" required>
+        </div>
+        <div class="form-group col">
+            <label for="total">Tiền</label>
+            <input type="number" class="form-control" id="total" name="total" min="0" oninvalid="this.setCustomValidity('Tổng tiền không được để trống.')" oninput="setCustomValidity('')" required>
+        </div>
+        <div class="form-group col">
+            <label for="ship">Ship</label>
+            <input type="number" class="form-control" id="ship" name="ship" min="0" oninvalid="this.setCustomValidity('Tiền ship không được để trống.')" oninput="setCustomValidity('')" required>
+        </div>
+        <div class="form-group col">
+            <label for="deposit">Cọc</label>
+            <input type="number" class="form-control" id="deposit" name="deposit" min="0">
+        </div>
+        <div class="form-group col-md-2">
+            <label for="page">Page</label>
+            <select class="form-control" id="page" name="page" oninvalid="this.setCustomValidity('Page không được để trống.')" oninput="setCustomValidity('')" required>
+                <option></option>
+            </select>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="note">Ghi chú</label>
+            <textarea class="form-control" id="note" name="note" rows="1"></textarea>
+        </div>
+        <div class="form-group col-md-2">
+            <label for="prepair">Chuẩn bị</label>
+            <select class="form-control" id="prepair" name="prepair" oninvalid="this.setCustomValidity('Phần chuẩn bị không được để trống.')" oninput="setCustomValidity('')" required>
+                <option></option>
+            </select>
+        </div>
+    </div>
+    <div id="sizeColorTable" class="table-responsive">
+      <!-- The Data Table is inserted here by JavaScript -->
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu dữ liệu</button>
+    <input class="btn btn-secondary" type="reset" value="Nhập lại">
+</form> 

@@ -1,0 +1,486 @@
+<script>
+
+    const colorRange = "SP!C:C";
+    const colorRange1 = "SP!D:D";
+    const colorRange2 = "SP!E:E";
+    const colorRange3 = "SP!F:F";
+    const colorRange4 = "SP!G:G";
+    const colorRange5 = "SP!H:H";
+    const colorRange6 = "SP!I:I";
+    const colorRange7 = "SP!J:J";
+    const colorRange8 = "SP!K:K";
+    const colorRange9 = "SP!L:L";
+  
+    const sizeRange = "SP!A:A";
+    const pageRange = "Other!H:H";
+    const prepairRange = "Other!F:F";
+    const productRange = "SP!C1:L1";
+  
+    const cityRange = "City!A1:A63";
+    const districtRange = "City!A1:B63";
+  
+    const lengthSizeRange = 10;
+    const lengthColorRange = 20;
+  
+    window.addEventListener("load", functionInit, true); 
+    var blockedStorage = false;
+    //INITIALIZE FUNCTIONS ONLOAD
+    function functionInit(){
+      try {
+        window.localStorage;
+      } catch (e) {
+        console.log(e);
+        blockedStorage = true;
+      }
+      showLoading();
+      preventFormSubmit();
+      addEventFullTextSearch();
+      createCityDropdown();
+      createPageDropdown();
+      createPrepairDropdown();
+      createSizeColorTable();
+      getLastTenRows();
+    };
+  
+    // Prevent forms from submitting.
+    function preventFormSubmit() {
+      var forms = document.querySelectorAll('form');
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].addEventListener("submit", function(event) {
+          showLoading();
+          event.preventDefault();
+        });
+      }
+    }
+  
+    // ADD EVENT EVENT FOR INPUT SEARCH
+    function addEventFullTextSearch() {
+      document.getElementById("fullTextSearch").addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+          event.preventDefault();
+          fullTextSearch(event.target.value);
+        }
+      });
+    }
+  
+    //HANDLE FORM SUBMISSION
+    function handleFormSubmit(formObject) {
+      showLoading()
+      google.script.run.withSuccessHandler(getValidation).processForm(formObject);
+    }
+    
+    function getValidation(dataResult) {
+      if (typeof dataResult === "string") {
+        document.getElementById("message").innerHTML = "<div class='alert alert-danger' role='alert'>" + dataResult +"</div>";
+        closeLoading();
+      } else {
+        createTable(dataResult);
+        document.getElementById("myForm").reset();
+        document.getElementById("district").innerHTML = '';
+      }
+    }
+  
+    //GET LAST 10 ROWS
+    function getLastTenRows(){
+      google.script.run.withSuccessHandler(createTable).getLastTenRows();
+    }
+    
+    //GET ALL DATA
+    function getAllData(){
+      google.script.run.withSuccessHandler(createTable).getAllData();
+    }
+  
+    //FULL TEXT SEARCH
+    function fullTextSearch(value){
+      showLoading();
+      var fullText = value || document.getElementById('fullTextSearch').value;
+      google.script.run.withSuccessHandler(createTable).getFullTextSearch(fullText);
+    }
+    
+    //CREATE THE DATA TABLE
+    function createTable(dataArray) {
+      if (dataArray.length){
+        var prepair = (JSON.parse(getStorage("prepair")) || []).map(a => a[0]);
+        var result = "<table class='table table-sm' style='font-size:0.8em'>"+
+                     "<thead style='white-space: nowrap'>"+
+                       "<tr>"+                               //Change table headings to match witht he Google Sheet
+                        "<th scope='col'></th>"+
+                        "<th scope='col'>Người chốt</th>"+
+                        "<th scope='col'>Họ và tên</th>"+
+                        "<th scope='col'>Số điện thoại</th>"+
+                        "<th scope='col'>Địa chỉ</th>"+
+                        "<th scope='col'>Đơn hàng</th>"+
+                        "<th scope='col'>Tiền</th>"+
+                        "<th scope='col'>Ship</th>"+
+                        "<th scope='col'>Cọc</th>"+
+                        "<th scope='col'>Ghi chú</th>"+
+                        "<th scope='col'>Chuẩn bị</th>"+
+                      "</tr>"+
+                    "</thead>";
+        for (var i = 0; i < dataArray.length; i++) {
+            result += "<tr>";
+            if (prepair.includes(dataArray[i][17])) {
+              result += "<td><button type='button' class='btn btn-warning btn-xs editBtn' onclick='editData(\"" + dataArray[i][0] + "\");'>Sửa</button></td>";
+            } else {
+              result += "<td></td>";
+            }
+            result += "<td>" + dataArray[i][2] + "</td>"; //Người chốt
+            result += "<td>" + dataArray[i][3] + "</td>"; //Họ và tên
+            result += "<td>" + dataArray[i][4] + "</td>"; //Số điện thoại
+            result += "<td>" + dataArray[i][5] + "</td>"; //Địa chỉ
+            result += "<td>" + dataArray[i][9] + "</td>"; //Đơn hàng
+            result += "<td>" + (dataArray[i][11] || '') + "</td>"; //Tiền
+            result += "<td>" + (dataArray[i][12] || '') + "</td>"; //Ship
+            result += "<td>" + (dataArray[i][13] || '') + "</td>"; //Cọc
+            result += "<td>" + (dataArray[i][14] || '') + "</td>"; //Ghi chú
+            result += "<td>" + (dataArray[i][17] || '') + "</td>"; //Chuẩn bị
+            result += "</tr>";
+        }
+        result += "</table>";
+        var div = document.getElementById('dataTable');
+        div.innerHTML = result;
+        document.getElementById("message").innerHTML = "";
+      } else {
+        var div = document.getElementById('dataTable');
+        div.innerHTML = "Không tìm thấy dữ liệu phù hợp!";
+      }
+      closeLoading();
+    }
+  
+    // //DELETE DATA
+    // function deleteData(el) {
+    //   var result = confirm("Want to delete?");
+    //   if (result) {
+    //     var recordId = el.parentNode.parentNode.cells[2].innerHTML;
+    //     google.script.run.withSuccessHandler(createTable).deleteData(recordId);
+    //   }
+    // }
+    
+    
+    //EDIT DATA
+    function editData(recordId){
+      showLoading();
+      // var recordId = el.parentNode.parentNode.cells[2].innerHTML; //https://stackoverflow.com/a/32377357/2391195
+      google.script.run.withSuccessHandler(populateForm).getRecordById(recordId);
+    }
+  
+    //POPULATE FORM
+    function populateForm(records){
+      records = records ? records[0] : [];
+      var i = 0;
+      document.getElementById('RecId').value = records[i++];
+      document.getElementById('DateCreated').value = records[i++];
+      document.getElementById('CreatedBy').value = records[i++];
+      document.getElementById('fullName').value = records[i++];
+      document.getElementById('phone').value = records[i++];
+      document.getElementById('address').value = records[i++];
+      document.getElementById('city').value = records[6];
+      //show city
+      showCityForUpdate(records[6]);
+      showDistrictForUpdate(records[7]);
+      document.getElementById('page').value = records[8];
+      i = 10;
+      document.getElementById('quantity').value = records[i++];
+      document.getElementById('total').value = records[i++];
+      document.getElementById('ship').value = records[i++];
+      document.getElementById('deposit').value = records[i++];
+      document.getElementById('note').value = records[i++]; //14
+      i = 17;
+      document.getElementById('prepair').value = records[i++];
+      i = 24;
+      //TABLE SIZE COLOR
+      for (var row = 0; row < lengthSizeRange; row++) {
+        for (var col = 0; col < lengthColorRange; col++) {
+          document.getElementById('cell' + row + '_' + col).value = records[i];
+          i++;
+        }
+      }
+      closeLoading();
+      document.getElementById("message").innerHTML = "<div class='alert alert-warning' role='alert'>Cập nhật đơn hàng [" + records[9] + "]</div>";
+    }
+  
+    function createCityDropdown() {
+      //SUBMIT YOUR DATA RANGE FOR DROPDOWN AS THE PARAMETER
+      var values = JSON.parse(getStorage("city")) || [];
+      if (values.length) {
+        cityDropDown(values);
+      } else {
+        google.script.run.withSuccessHandler(cityDropDown).getDropdownList(cityRange);
+      }
+    }
+  
+    //POPULATE CITY DROPDOWNS
+    function cityDropDown(values) {
+      dropDown("city", values);
+      setStorage("city", JSON.stringify(values));
+    }
+    
+    var selected;
+  
+    //SELECT CITY
+    function selectCity(value) {
+      createDistrictDropdown(value);
+    }
+  
+    function showCityForUpdate(value) {
+      document.getElementById("city").value = value;
+    }
+  
+    function showDistrictForUpdate(value) {
+      document.getElementById("district").value = value;
+      districtDropDown([value]);
+    }
+  
+    function createDistrictDropdown(value) {
+      selected = value;
+      //SUBMIT YOUR DATA RANGE FOR DROPDOWN AS THE PARAMETER
+      var values = JSON.parse(getStorage("getDistrictOfCity")) || [];
+      if (values.length) {
+        getDistrictOfCity(values);
+      } else {
+        google.script.run.withSuccessHandler(getDistrictOfCity).getDropdownList(districtRange);
+      }
+    }
+  
+    function getDistrictOfCity(values) {
+      setStorage("getDistrictOfCity", JSON.stringify(values));
+      for (var i = 0, length = values.length; i < length; i++) {
+        if (values[i][0] === selected) {
+          google.script.run.withSuccessHandler(districtDropDown).getDropdownList(values[i][1]);
+          break;
+        }
+      }
+    }
+  
+    //POPULATE DISTRICT DROPDOWNS
+    function districtDropDown(values) {
+      var district = document.getElementById('district');
+      district.innerHTML = '';
+      dropDown("district", values);
+    }
+  
+    function createPageDropdown() {
+      //SUBMIT YOUR DATA RANGE FOR DROPDOWN AS THE PARAMETER
+      var values = JSON.parse(getStorage("page")) || [];
+      if (values.length) {
+        pageDropDown(values);
+      } else {
+        google.script.run.withSuccessHandler(pageDropDown).getDropdownList(pageRange);
+      }
+    }
+  
+    //POPULATE CITY DROPDOWNS
+    function pageDropDown(values) {
+      dropDown("page", values);
+      setStorage("page", JSON.stringify(values));
+    }
+  
+    function createPrepairDropdown() {
+      //SUBMIT YOUR DATA RANGE FOR DROPDOWN AS THE PARAMETER
+      var values = JSON.parse(getStorage("prepair")) || [];
+      if (values.length) {
+        prepairDropDown(values);
+      } else {
+        google.script.run.withSuccessHandler(prepairDropDown).getDropdownList(prepairRange);
+      }
+    }
+  
+    //POPULATE PREPAIR DROPDOWNS
+    function prepairDropDown(values) {
+      dropDown("prepair", values);
+      setStorage("prepair", JSON.stringify(values));
+    }
+  
+    function createProductDropdown() {
+      //SUBMIT YOUR DATA RANGE FOR DROPDOWN AS THE PARAMETER
+      var values = JSON.parse(getStorage("product")) || [];
+      if (values.length) {
+        productDropDown(values);
+      } else {
+        google.script.run.withSuccessHandler(productDropDown).getDropdownList(productRange);
+      }
+    }
+  
+    //POPULATE PRODUCT DROPDOWNS
+    function productDropDown(values) {
+      console.log(values[0]);
+      dropDown("product", values[0]);
+      setStorage("product", JSON.stringify(values));
+    }
+  
+    var productSelected;
+  
+    //SELECT PRODUCT
+    function selectProduct(value) {
+      console.log(value);
+      $('.tr-product').attr('style', 'display: none;');
+      document.getElementById(value).style.display = "table-row";
+    }
+  
+    //SIZE COLOR TABLE
+    function createSizeColorTable() {
+      var values = JSON.parse(getStorage("sizeColorTable")) || [];
+      if (values.length) {
+        sizeColorTable(values);
+      } else {
+        google.script.run.withSuccessHandler(sizeColorTable).getDropdownLists([colorRange, colorRange1, colorRange2, colorRange3, colorRange4, colorRange5, colorRange6, colorRange7, colorRange8, colorRange9]);
+      }
+    }
+  
+    //CREATE THE DATA TABLE
+    function sizeColorTable(values) {    
+      //Save data for improve performance
+      setStorage("sizeColorTable", JSON.stringify(values));
+      console.log(values);
+      var sizeColorTables = values.map(color => color.values);
+      var thead = "";
+  
+      for (var i = 0; i < sizeColorTables.length; i++) {
+        thead += "<tr id='" + sizeColorTables[i][0] +"' class='tr-product' style='display: none;'>";
+        var th = "<th style='width: 120px;'>" + sizeColorTables[i][0] +"</th>";
+        for (var j = 1; j < lengthColorRange; j++) { 
+          th +="<th>" + (sizeColorTables[i][j] || "") + "</th>" ; 
+        }
+        thead += th;
+        thead += "</tr>"
+      }
+      thead += "<th>"+ "<select class='form-control' id='product' name='product' onchange='selectProduct(this.value)'>" +
+                          "<option></option>" +
+                        "</select>" +"</th>"
+      for (var i = 1; i < lengthColorRange; i++) {
+        thead += "<th>";
+        thead += i;
+        thead += "</th>"
+      }
+      //table, thead
+      var result = 
+      "<table class='table table-sm table-bordered'>" +
+        "<thead>"+ 
+          thead +
+        "</thead>" +
+        "<tbody>";
+          //tr,td  
+          for (var row = 0; row < lengthSizeRange; row++) {
+            result += "<tr>";
+            result += "<td>" + 
+                        "<select class='form-control' id='cell" + row + "_0' name='cell" + row + "_0'>" +
+                          "<option></option>" +
+                        "</select>" +
+                      "</td>";
+              
+            for (var col = 1; col < lengthColorRange; col++) { 
+                result += "<td>" + 
+                            "<input type='number' class='form-control' id='cell" + row + "_" + col + "' name='cell" + row + "_" + col + "'>" + 
+                          "</td>";
+            }
+            result += "</tr>";
+          }
+          result +=
+        "</tbody>" + 
+      "</table>";
+      var div = document.getElementById('sizeColorTable');
+      div.innerHTML = result;
+      createSizeDropDown();
+      createProductDropdown();
+      //selectProduct('CỔ TRÒN');
+    }
+  
+    function createSizeDropDown() {
+      var values = JSON.parse(getStorage("sizeDropDown")) || [];
+      if (values.length) {
+        sizeDropDown(values);
+      } else {
+        google.script.run.withSuccessHandler(sizeDropDown).getDropdownList(sizeRange);
+      }
+    }
+  
+    function sizeDropDown(values) {
+      for (var row = 0; row < lengthSizeRange; row++) {
+        dropDown("cell" + row +"_0", values);
+      }
+      setStorage("sizeDropDown", JSON.stringify(values));
+    }
+  
+    function dropDown(id, values) {
+      var list = document.getElementById(id);
+      if (list) {
+        for (var i = 0; i < values.length; i++) {
+          var option = document.createElement("option");
+          option.value = values[i];
+          option.text = values[i];
+          list.appendChild(option);
+        }
+      } else {
+        console.error("Cannot load id: " + id);
+      }
+    }
+  
+    function showLoading() {
+      document.getElementById("loader").style.display = "block";
+    }
+  
+    function closeLoading() {
+      document.getElementById("loader").style.display = "none";
+    }
+  
+    function getStorage(item) {
+      if (!blockedStorage) {
+        return window.sessionStorage.getItem(item);
+      }
+      return null;
+    }
+  
+    function setStorage(item, value) {
+      if (!blockedStorage) {
+        window.sessionStorage.setItem(item, value);
+      }
+    }
+  
+    function sumTotal() {
+        var total = $('#sizeColorTable input').toArray().map((a, b) => {
+            return parseInt(a.value || 0) + parseInt(b.value || 0)
+        }).reduce((a, b) => a + b, 0);
+        return total;
+    }
+  
+    $(function() {
+      /*CLEAR ALL INPUT IN ROW*/
+      $('#sizeColorTable select').on("change", function(e) {
+        if (e.target.value == '') {
+          $(this).parent('td').parent('tr').find('input').each(function( index ) {
+            $(this).val('');
+          });
+          $('#quantity').val(sumTotal());
+        }
+      });
+  
+      /*DISABLE +, -, e, E*/
+      $(':input[type="number"]').on("keypress", function(e){ 
+        if (e.which != 8 && e.which != 0 && e.which != 45 && e.which < 48 || e.which > 57)
+        {
+          e.preventDefault();
+        }
+      });
+  
+      /*SUM TOTAL*/
+      $('#sizeColorTable input').on("focusout", function(e) { 
+        $('#quantity').val(sumTotal());
+      });
+  
+  
+      /**/
+      $('#quantity').on("focusout", function(e){
+        var total = sumTotal();
+        if (e.target.value != total) {
+          $('#quantity').val(total);
+          e.preventDefault();
+        }
+      });
+  
+    });
+  
+  
+  
+   
+  
+  </script>
